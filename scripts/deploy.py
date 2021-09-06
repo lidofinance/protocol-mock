@@ -3,7 +3,7 @@ import time
 from brownie import ZERO_ADDRESS
 
 
-def deploy(Lido, NodeOperatorsRegistry, DepositContractMock, deployer):
+def deploy(Lido, NodeOperatorsRegistry, DepositContractMock, WstETH, deployer):
     deposit_contract = DepositContractMock.deploy({'from': deployer})
     registry = NodeOperatorsRegistry.deploy({'from': deployer})
 
@@ -19,6 +19,10 @@ def deploy(Lido, NodeOperatorsRegistry, DepositContractMock, deployer):
     )
 
     print(f'lido: {lido.address}')
+    
+    wsteth = WstETH.deploy(lido, {'from': deployer})
+
+    print(f'wstETH: {wsteth.address}')
 
     registry.setLido(lido, {'from': deployer})
 
@@ -27,7 +31,7 @@ def deploy(Lido, NodeOperatorsRegistry, DepositContractMock, deployer):
     lido.setFee(0, {'from': deployer})
     lido.resume({'from': deployer})
 
-    return (lido, registry)
+    return (lido, registry, wsteth)
 
 
 def add_operators(registry, operators, deployer, keys_per_operator = 20):
@@ -61,3 +65,11 @@ def stake(lido, stakers, oracle):
     # lido.pushBeacon(deposited_validators, (deposited_validators * 32 + 1) * 10**18, {'from': oracle})
 
     print('beacon stat:', dict(lido.getBeaconStat()))
+
+
+def wrap(lido, wsteth, stakers):
+    for (staker, amount) in stakers:
+        lido.approve(wsteth, amount, {'from': staker})
+        wsteth.wrap(amount, {'from': staker})
+        balance = wsteth.balanceOf(staker)
+        print(f'balance of {staker}: {balance / 10**18} wstETH')
