@@ -31,7 +31,7 @@ def deploy(Lido, NodeOperatorsRegistry, DepositContractMock, WstETH, deployer):
     lido.setFee(0, {'from': deployer})
     lido.resume({'from': deployer})
 
-    return (lido, registry, wsteth)
+    return (lido, registry, wsteth, deposit_contract)
 
 
 def add_operators(registry, operators, deployer, keys_per_operator = 20):
