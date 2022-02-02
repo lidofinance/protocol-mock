@@ -15,6 +15,11 @@ contract DepositContractMock is IDepositContract {
         uint256 value
     );
 
+    event EtherClaimed(
+        address indexed claimer,
+        uint256 amount
+    );
+
     function deposit(
         bytes /* 48 */ pubkey,
         bytes /* 32 */ withdrawal_credentials,
@@ -25,5 +30,11 @@ contract DepositContractMock is IDepositContract {
         payable
     {
         emit Deposit(pubkey, withdrawal_credentials, signature, deposit_data_root, msg.value);
+    }
+
+    function claim() external {
+        uint256 balanceToClaim = address(this).balance;
+        msg.sender.send(balanceToClaim);
+        emit EtherClaimed(msg.sender, balanceToClaim);
     }
 }
